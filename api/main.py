@@ -13,6 +13,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from api.dependencies import cleanup_discovery_agent, get_discovery_agent
 from api.errors import register_exception_handlers
 from api.routers import agents, feedback, providers, requests, search
+from api.agent_registry import close_redis
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -109,6 +110,7 @@ async def lifespan(app: FastAPI):
     # Cleanup on shutdown
     logger.info("Cleaning up discovery agent...")
     await cleanup_discovery_agent()
+    await close_redis()
 
 
 app = FastAPI(title="Kuberbolt REST API", lifespan=lifespan)
@@ -122,10 +124,11 @@ origins = [o.strip() for o in frontend_origin.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
+    expose_headers=["X-Key-Warning"],
 )
 
 # Request logging middleware with redaction

@@ -30,7 +30,6 @@ class RegisterAgentRequest(BaseModel):
     picture_url: str | None = None
     lightning: LightningCredentials
     service: ServiceInfo | None = None
-    relays: list[str] | None = None
 
     @model_validator(mode="after")
     def validate_service_for_role(self) -> "RegisterAgentRequest":
@@ -43,6 +42,9 @@ class RegisterAgentRequest(BaseModel):
 
 class RegisterAgentResponse(BaseModel):
     agent_pubkey: str
+    session_token: str
+    agent_privkey: str  # hex-encoded Nostr secret key
+    agent_nsec: str     # bech32-encoded Nostr secret key 
     role: str
     lightning: LightningCredentials | None = None
     service: ServiceInfo | None = None
@@ -59,9 +61,7 @@ class UpdateField(BaseModel):
 
 class UpdateAgentRequest(BaseModel):
     agent_pubkey: str
-    agent_privkey: str
     updates: list[UpdateField]
-    relays: list[str] | None = None
 
 class UpdateAgentResponse(BaseModel):
     agent_pubkey: str
